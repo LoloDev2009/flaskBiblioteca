@@ -20,17 +20,18 @@
     <button id="addBook"><img src="static/plusIcon.svg"></button>
   </div>
   <div id="añadidor">
-    <input type="text" id="buscadorISBN" placeholder="ISBN">
-    <button id="searchBtn"><img src="static/searchIcon.svg"></button>
+    <input type="number" id="buscadorISBN" placeholder="ISBN">
+    <button type="submit" id="searchBtn"><img src="static/searchIcon.svg"></button>
   </div>
   <form id="manualForm">
-    <input type="text" id="isbn" placeholder="ISBN" readonly>
+    <input type="number" id="isbn" placeholder="ISBN" readonly>
     <input type="text" id="titulo" placeholder="Título">
     <input type="text" id="autor" placeholder="Autor">
     <input type="text" id="editorial" placeholder="Editorial">
-    <input type="text" id="anio" placeholder="Año">
+    <input type="number" id="anio" placeholder="Año">
     <input type="text" id="portada" placeholder="URL portada">
     <button type="submit">Agregar Libro</button>
+    <button type="button" id="botonCancelar">Cancelar</button>
   </form>
 
   <div id="editarForm" style="display:none;">
@@ -42,6 +43,7 @@
     <input type="text" id="edit-anio" placeholder="Año" />
     <input type="text" id="edit-portada" placeholder="URL portada" />
     <button id="btnGuardarEdicion">Guardar cambios</button>
+    <button type="button" id="botonEliminar">Eliminar</button>
   </div>
 
   <div class="tabla-contenedor">

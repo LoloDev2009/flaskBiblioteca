@@ -1,20 +1,46 @@
 const btnAdd = document.getElementById("addBook");
 const btnBuscarISBN = document.getElementById("searchBtn");
+const btnCancelar = document.getElementById("botonCancelar");
+const btnEliminar = document.getElementById("botonEliminar");
 
 btnAdd.addEventListener("click", () => {
   const añadidor = document.getElementById("añadidor");
+  const buscador = document.getElementById("buscadorISBN");
   const form = document.getElementById("manualForm");
   const formEdit = document.getElementById("editarForm");
 
-
   if(form.style.display !== "block" && formEdit.style.display !== "block"){
     añadidor.style.display = "flex";
+    buscador.focus()
   }else{alert('Complete el cuadro manual.')}
 });
 
 btnBuscarISBN.addEventListener("click", () => {
   searchIsbn();
 });
+
+btnCancelar.addEventListener("click", () => {
+  const form = document.getElementById("manualForm");
+  form.reset();
+  form.style.display = "none";
+  cargarLibros()
+})
+
+btnEliminar.addEventListener("click", () => {
+  const form = document.getElementById("editarForm");
+  form.style.display = "none";
+  const isbn = document.getElementById("edit-isbn").value
+  deleteBook(isbn)
+  
+})
+
+async function deleteBook(isbn) {
+  const res = await fetch(`/api/libro/${isbn}`,{method: "DELETE"});
+  if (res){
+    console.log(res)
+  }
+  cargarLibros()
+}
 
 async function searchIsbn(){
   const codigo = document.getElementById("buscadorISBN") 
@@ -31,7 +57,7 @@ async function searchIsbn(){
   }else if(resultado['type'] == 'edit'){
     console.log(resultado)
     mostrarEdicionLibro(resultado['libro'])
-  }
+  }else{alert('Hola')}
   cargarLibros()
   codigo.value = '';
   
@@ -66,7 +92,6 @@ function mostrarFormularioManual(isbn) {
       form.style.display = "none";
       cargarLibros()
     }else{alert(`Error al agregar el libro: ${resultado['title']}`);}
-    
   };
 }
 

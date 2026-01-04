@@ -64,6 +64,13 @@ def addBook(portada,isbn, title='-', autor='-', editorial='-', date='-'):
     conn.close()
     return
 
+def deleteBook(isbn):
+    conn = sqlite3.connect(db)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM libros WHERE isbn = ?", (isbn,))
+    conn.commit()
+    conn.close()
+    return
 
 tables()
 

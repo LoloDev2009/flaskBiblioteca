@@ -14,6 +14,13 @@ def books():
     books = database.getBooks()
     return books
 
+@app.route('/api/libro/<int:isbn>', methods = ['DELETE'])
+def deleteBook(isbn):
+    database.deleteBook(isbn)
+    return {'status': 'ok'}
+
+
+
 @app.route('/api/libro', methods = ['POST'])
 def searchBook():
     isbn = request.json['isbn']
@@ -38,7 +45,7 @@ def searchBook():
         if book['totalItems']:
             data = book['items'][0]['volumeInfo']
             try: portada = data['imageLinks']['thumbnail'] 
-            except: portada = '-'
+            except: portada = ''
             try: title = data['title']
             except: title = '-'
             try:
