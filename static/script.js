@@ -128,10 +128,13 @@ document.getElementById("btnGuardarEdicion").addEventListener("click", async () 
       body: JSON.stringify(libroEditado)
     });
     const json = await res.json();
-    alert(`Libro actualizado: ${json.titulo}`);
+    alert(`Libro actualizado: ${json.title}`);
     form.style.display = "none";
+    cargarLibros()
   } catch (err) {
     alert(err);
+    cargarLibros()
+
   }
 });
 

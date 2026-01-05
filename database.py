@@ -72,5 +72,23 @@ def deleteBook(isbn):
     conn.close()
     return
 
+def editBook(book):
+    print(book)
+    isbn = book['isbn']
+    titulo = book['titulo']
+    autor = book['autor']
+    editorial = book['editorial']
+    año = book['año']
+    portada = book['portada_url']
+    try:
+        conn = sqlite3.connect(db)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE libros SET titulo = ?, autor = ?, editorial = ?, año = ?, portada = ? WHERE isbn = ? ", (titulo,autor,editorial,año,portada,isbn))
+        conn.commit()
+        conn.close()
+        return {'title': titulo, 'status': 'ok'}
+    except Exception as e:
+        return {'title': titulo, 'status': 'not good :(', 'exception': e}
+
 tables()
 

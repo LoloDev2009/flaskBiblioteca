@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify, render_template
-from flask_sqlalchemy import SQLAlchemy
 import database
 import requests
 import json
+import threading
+import webview
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -19,6 +21,10 @@ def deleteBook(isbn):
     database.deleteBook(isbn)
     return {'status': 'ok'}
 
+@app.route('/api/libro/editar', methods = ['PUT'])
+def updateBook():
+    editedBook = request.json
+    return database.editBook(editedBook)
 
 
 @app.route('/api/libro', methods = ['POST'])
@@ -97,5 +103,22 @@ def addBookManual():
     }
     return response
 
-if __name__ == '__main__':
-    app.run(debug=True)
+def run_flask():
+    app.run(
+        host="127.0.0.1",
+        port=5000,
+        debug=False,
+        use_reloader=False
+    )
+
+if __name__ == "__main__":
+    threading.Thread(target=run_flask, daemon=True).start()
+
+    webview.create_window(
+        "Biblioteca",
+        "http://127.0.0.1:5000",
+        width=1000,
+        height=700,
+        resizable=True
+    )
+    webview.start()
