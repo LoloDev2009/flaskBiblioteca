@@ -107,11 +107,11 @@ def run_flask():
     app.run(
         host="127.0.0.1",
         port=5000,
-        debug=False,
+        debug=True,
         use_reloader=False
     )
 
-if __name__ == "__main__":
+if __name__ == "_tg_main__":
     threading.Thread(target=run_flask, daemon=True).start()
 
     webview.create_window(
@@ -122,3 +122,5 @@ if __name__ == "__main__":
         resizable=True
     )
     webview.start()
+
+run_flask()

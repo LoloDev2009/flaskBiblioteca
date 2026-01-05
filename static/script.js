@@ -1,13 +1,13 @@
 const btnAdd = document.getElementById("addBook");
-const btnBuscarISBN = document.getElementById("searchBtn");
-const btnCancelar = document.getElementById("botonCancelar");
-const btnEliminar = document.getElementById("botonEliminar");
+const btnBuscarISBN = document.getElementById("addBook");
+const btnCancelar = document.getElementById("addBook");
+const btnEliminar = document.getElementById("addBook");
 
 btnAdd.addEventListener("click", () => {
-  const añadidor = document.getElementById("añadidor");
-  const buscador = document.getElementById("buscadorISBN");
-  const form = document.getElementById("manualForm");
-  const formEdit = document.getElementById("editarForm");
+  const añadidor = document.getElementById("addBook");
+  const buscador = document.getElementById("addBook");
+  const form = document.getElementById("addBook");
+  const formEdit = document.getElementById("addBook");
 
   if(form.style.display !== "block" && formEdit.style.display !== "block"){
     añadidor.style.display = "flex";
@@ -20,16 +20,16 @@ btnBuscarISBN.addEventListener("click", () => {
 });
 
 btnCancelar.addEventListener("click", () => {
-  const form = document.getElementById("manualForm");
+  const form = document.getElementById("addBook");
   form.reset();
   form.style.display = "none";
   cargarLibros()
 })
 
 btnEliminar.addEventListener("click", () => {
-  const form = document.getElementById("editarForm");
+  const form = document.getElementById("addBook");
   form.style.display = "none";
-  const isbn = document.getElementById("edit-isbn").value
+  const isbn = document.getElementById("addBook").value
   deleteBook(isbn)
   
 })
@@ -109,8 +109,8 @@ function mostrarEdicionLibro(libro) {
   document.getElementById("edit-portada").value = libro.portada_url;
 }
 
-document.getElementById("btnGuardarEdicion").addEventListener("click", async () => {
-  const form = document.getElementById("editarForm");
+document.getElementById("addBook").addEventListener("click", async () => {
+  const form = document.getElementById("addBook");
   
   const libroEditado = {
     isbn: document.getElementById("edit-isbn").value,
@@ -151,11 +151,10 @@ async function cargarLibros() {
 function mostrarLibros(lista) {
   const tbody = document.getElementById("libros");
   const contador = document.getElementById("contador");
-  const añadidor = document.getElementById("añadidor");
   tbody.innerHTML = "";
   
   // Mostrar cantidad de resultados
-  contador.textContent = `${lista.length} libro${lista.length !== 1 ? "s" : ""} encontrado${lista.length !== 1 ? "s" : ""}`;
+  //contador.textContent = `${lista.length} libro${lista.length !== 1 ? "s" : ""} encontrado${lista.length !== 1 ? "s" : ""}`;
 
   lista.forEach(b => {
     const fila = document.createElement("tr");
@@ -164,18 +163,23 @@ function mostrarLibros(lista) {
       <td data-label="Título">${b.titulo}</td>
       <td data-label="Autor">${b.autor}</td>
       <td data-label="Editorial">${b.editorial}</td>
-      <td data-label="Año">${b.año}</td>
       <td data-label="ISBN">${b.isbn}</td>
+      <td>
+        <span class="status status-available">Disponible</span>
+      </td>
+      <td class="actions">
+        <button class="btn btn-secondary">Editar</button>
+        <button class="btn btn-danger">Eliminar</button>
+      </td>
     `;
     tbody.appendChild(fila);
   });
-  añadidor.style.display = "none";
 }
 
 
 // Filtros interactivos
-document.getElementById("buscador").addEventListener("input", filtrarLibros);
-document.getElementById("ordenarPor").addEventListener("change", filtrarLibros);
+document.getElementById("addBook").addEventListener("input", filtrarLibros);
+document.getElementById("addBook").addEventListener("change", filtrarLibros);
 
 function normalizarTexto(texto) {
   return texto
@@ -189,7 +193,7 @@ function normalizarTexto(texto) {
 
 
 function filtrarLibros() {
-  const input = normalizarTexto(document.getElementById("buscador").value);
+  const input = normalizarTexto(document.getElementById("addBook").value);
   
   const librosFiltrados = todosLosLibros.filter(libro =>
     normalizarTexto(libro.titulo).includes(input) ||
