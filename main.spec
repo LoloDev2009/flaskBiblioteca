@@ -5,7 +5,7 @@ a = Analysis(
     ['E:\\flaskBilbioteca\\main.py'],
     pathex=[],
     binaries=[],
-    datas=[('E:\\flaskBilbioteca\\database.py', '.'), ('E:\\flaskBilbioteca\\templates', 'templates/'), ('E:\\flaskBilbioteca\\static', 'static/'), ('E:\\flaskBilbioteca\\database', 'database/')],
+    datas=[('E:\\flaskBilbioteca\\templates', 'templates'), ('E:\\flaskBilbioteca\\static', 'static'), ('E:\\flaskBilbioteca\\database', 'database')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -35,4 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['E:\\flaskBilbioteca\\static\\icon.ico'],
 )

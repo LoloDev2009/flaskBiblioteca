@@ -125,9 +125,14 @@ body {
     color: #166534;
 }
 
+.status-unaviable {
+    background: #f2ab97;
+    color: #ba381e;
+}
+
 /* Acciones */
 .actions {
-    display: flex;
+    padding-left: 10px;;
     gap: 0.5rem;
 }
 
@@ -149,6 +154,8 @@ body {
 #libros img {
   margin-top: 8px;
   border-radius: 6px;
+  max-height: 50px;
+  width: auto;
 }
 
 .modal-content {
@@ -260,4 +267,12 @@ label {
     border: none;
     border-top: 1px solid var(--border);
     margin: 1.25rem 0 1.5rem;
+}
+
+#form-grid{
+    display: none;
+}
+
+#contador{
+    font-weight: bold;
 }

@@ -1,142 +1,161 @@
-const btnAdd = document.getElementById("addBook");
-const btnBuscarISBN = document.getElementById("addBook");
-const btnCancelar = document.getElementById("addBook");
-const btnEliminar = document.getElementById("addBook");
+document.addEventListener("DOMContentLoaded", () => {
+  const addBook = document.getElementById("addBook");
+  const btnBuscarIsbn = document.getElementById("btnBuscarISBN");
+  const btnCancel = document.getElementById("btnCancel");
+  const btnDel = document.getElementById("btnDel");
 
-btnAdd.addEventListener("click", () => {
-  const añadidor = document.getElementById("addBook");
-  const buscador = document.getElementById("addBook");
-  const form = document.getElementById("addBook");
-  const formEdit = document.getElementById("addBook");
+  document.getElementById("buscador").addEventListener("input", filtrarLibros);
 
-  if(form.style.display !== "block" && formEdit.style.display !== "block"){
-    añadidor.style.display = "flex";
-    buscador.focus()
-  }else{alert('Complete el cuadro manual.')}
+  addBook.addEventListener("click", (e) => {
+    const form = document.getElementById("manualForm");
+    form.style.display = "block";
+  })
+
+  btnBuscarIsbn.addEventListener("click", (e) =>{
+    searchIsbn()
+  })
+
+  btnDel.addEventListener("click", (e) =>{
+    deleteBook()
+  })
+
+  btnCancel.addEventListener("click", (e) =>{
+    const pestaña = document.getElementById("manualForm");
+    pestaña.style.display = "none";
+    deshabilitarFormulario()
+  })
+
 });
 
-btnBuscarISBN.addEventListener("click", () => {
-  searchIsbn();
-});
+async function deleteBook() {
+  const pestaña = document.getElementById("manualForm");
+  const codigo = document.getElementById("isbnBuscador")
+  const isbn = codigo.value
 
-btnCancelar.addEventListener("click", () => {
-  const form = document.getElementById("addBook");
-  form.reset();
-  form.style.display = "none";
-  cargarLibros()
-})
+  await fetch(`/api/libro/${isbn}`,{method: "DELETE"});
 
-btnEliminar.addEventListener("click", () => {
-  const form = document.getElementById("addBook");
-  form.style.display = "none";
-  const isbn = document.getElementById("addBook").value
-  deleteBook(isbn)
-  
-})
-
-async function deleteBook(isbn) {
-  const res = await fetch(`/api/libro/${isbn}`,{method: "DELETE"});
-  if (res){
-    console.log(res)
-  }
+  pestaña.style.display = "none";
+  deshabilitarFormulario()
   cargarLibros()
 }
 
 async function searchIsbn(){
-  const codigo = document.getElementById("buscadorISBN") 
+  const pestaña = document.getElementById("manualForm");
+
+  const form = document.getElementById('añadirLibro')
+  const tituloForm = document.getElementById('tituloForm')
+  const codigo = document.getElementById("isbnBuscador")
+  const titulo =  document.getElementById("formTitulo")
+  const autor =  document.getElementById("formAutor")
+  const estado =  document.getElementById("formEstado")
+  const editorial = document.getElementById("formEditorial") 
+  const url = document.getElementById("formUrl") 
+
   const res = await fetch("/api/libro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isbn: codigo.value })
       });
+
   const resultado = await res.json();
-  if (resultado['type'] == 'API'){
-    alert(`Libro ${resultado['title']} agregado correctamente.`)
-  }else if(resultado['type'] == 'manual'){
-    mostrarFormularioManual(codigo.value);
-  }else if(resultado['type'] == 'edit'){
-    console.log(resultado)
-    mostrarEdicionLibro(resultado['libro'])
-  }else{alert('Hola')}
-  cargarLibros()
-  codigo.value = '';
-  
-}
+  if(resultado){
+    var type = resultado['type']
+    libro = resultado['libro']
+    
+    habilitarFormulario(type)
 
-function mostrarFormularioManual(isbn) {
-  const form = document.getElementById("manualForm");
-  form.style.display = "block";
-  document.getElementById("isbn").value = isbn;
+    if (type == 'API' || type == "edit"){
 
-  form.onsubmit = async (e) => {
-    e.preventDefault();
-    const libro = {
-      isbn: document.getElementById("isbn").value,
-      titulo: document.getElementById("titulo").value,
-      autor: document.getElementById("autor").value,
-      editorial: document.getElementById("editorial").value,
-      año: document.getElementById("anio").value,
-      portada_url: document.getElementById("portada").value
-    };
+      titulo.value = libro['titulo']
+      autor.value = libro['autor']
+      editorial.value = libro['editorial']
+      url.value = libro['portada_url']
+      estado.value = libro['estado']
 
-    const res = await fetch("/api/libro/manual", {
+      if(resultado['type'] == 'edit'){
+        tituloForm.textContent = "Editar libro"
+      }
+    }
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+
+      const libroDevolver = {
+        isbn: codigo.value,
+        titulo: titulo.value,
+        autor: autor.value,
+        editorial: editorial.value,
+        portada_url: url.value,
+        estado: estado.value
+      };
+
+      const res = await fetch("/api/libro/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(libro)
-    })
+      body: JSON.stringify(libroDevolver)
+      })
 
-    const resultado = await res.json();
-    if (resultado['status'] == 200){
-      alert(`Libro agregado manualmente: ${resultado['title']}`);
-      form.reset();
-      form.style.display = "none";
-      cargarLibros()
-    }else{alert(`Error al agregar el libro: ${resultado['title']}`);}
-  };
+      if (res.ok){
+        pestaña.style.display = "none";
+        deshabilitarFormulario()
+        cargarLibros()
+      }else{alert(`Error al guardar el libro: ${titulo.value}`);}
+      }
+  }else{alert('Error con el servidor')}
 }
 
-function mostrarEdicionLibro(libro) {
-  const formAgregar = document.getElementById("manualForm");
-  formAgregar.style.display = "none";
-  const form = document.getElementById("editarForm");
-  form.style.display = "block";
+function habilitarFormulario(tipo){
+  const formGrid = document.getElementById("form-grid")
+  const campos = document.querySelectorAll('.manualForm')
+  const codigo = document.getElementById("isbnBuscador")
+  const btnBorrar = document.getElementById('btnDel')
+  const btnCancelar = document.getElementById('btnCancel')
 
-  document.getElementById("edit-isbn").value = libro.isbn;
-  document.getElementById("edit-titulo").value = libro.titulo;
-  document.getElementById("edit-autor").value = libro.autor;
-  document.getElementById("edit-editorial").value = libro.editorial;
-  document.getElementById("edit-anio").value = libro.año;
-  document.getElementById("edit-portada").value = libro.portada_url;
-}
-
-document.getElementById("addBook").addEventListener("click", async () => {
-  const form = document.getElementById("addBook");
-  
-  const libroEditado = {
-    isbn: document.getElementById("edit-isbn").value,
-    titulo: document.getElementById("edit-titulo").value,
-    autor: document.getElementById("edit-autor").value,
-    editorial: document.getElementById("edit-editorial").value,
-    año: document.getElementById("edit-anio").value,
-    portada_url: document.getElementById("edit-portada").value,
-  };
-
-  try {
-    const res = await fetch("/api/libro/editar", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(libroEditado)
-    });
-    const json = await res.json();
-    alert(`Libro actualizado: ${json.title}`);
-    form.style.display = "none";
-    cargarLibros()
-  } catch (err) {
-    alert(err);
-    cargarLibros()
-
+  codigo.readOnly = true;
+  for(var i = 0; i < campos.length; i++){
+    campos[i].readOnly = false;
+    campos[i].disabled = false;
   }
-});
+  formGrid.style.display = 'block'
+  if(tipo == "edit"){
+    btnBorrar.style.display = 'block'
+    btnCancelar.style.display = 'none'
+  }else{
+    btnBorrar.style.display = 'none'
+    btnCancelar.style.display = 'block'
+  }
+}
+
+function deshabilitarFormulario(){
+  const tituloForm = document.getElementById('tituloForm')
+  const formGrid = document.getElementById("form-grid")
+  const titulo =  document.getElementById("formTitulo")
+  const autor =  document.getElementById("formAutor")
+  const estado =  document.getElementById("formEstado")
+  const editorial = document.getElementById("formEditorial") 
+  const url = document.getElementById("formUrl") 
+  const campos = document.querySelectorAll('.manualForm')
+  const codigo = document.getElementById("isbnBuscador")
+
+  codigo.readOnly = false;
+  for(var i = 0; i < campos.length; i++){
+    campos[i].readOnly = true;
+    campos[i].disabled = true;
+  }
+  
+  codigo.value = '';
+  titulo.value = '';
+  autor.value = '';
+  editorial.value = '';
+  url.value = '';
+  estado.value = 'Disponible'
+
+  formGrid.style.display = 'none'
+  tituloForm.textContent = "Agregar libro"
+}
+
+
+// ===== NO MODIFICAR CODIGO AL PEDO!! ===
 
 // ===== Cargar lista de libros =====
 let todosLosLibros = []; // se guarda la lista completa
@@ -158,20 +177,20 @@ function mostrarLibros(lista) {
 
   lista.forEach(b => {
     const fila = document.createElement("tr");
+    var spanEstado = ``
+    if(b.estado == "Disponible"){
+      spanEstado = `<td><span class="status status-available">Disponible</span></td>`
+    }else{spanEstado = `<td><span class="status status-unaviable">Prestado</span></td>`}
+
+    contador.textContent = `${lista.length} libro${lista.length !== 1 ? "s" : ""} encontrado${lista.length !== 1 ? "s" : ""}`;
+
     fila.innerHTML = `
       <td data-label="Portada">${b.portada_url ? `<img src="${b.portada_url}" class="portada">` : `<img src="static/29302.png" class="portada">`}</td>
       <td data-label="Título">${b.titulo}</td>
       <td data-label="Autor">${b.autor}</td>
       <td data-label="Editorial">${b.editorial}</td>
       <td data-label="ISBN">${b.isbn}</td>
-      <td>
-        <span class="status status-available">Disponible</span>
-      </td>
-      <td class="actions">
-        <button class="btn btn-secondary">Editar</button>
-        <button class="btn btn-danger">Eliminar</button>
-      </td>
-    `;
+      `+spanEstado
     tbody.appendChild(fila);
   });
 }
@@ -191,26 +210,17 @@ function normalizarTexto(texto) {
     .trim();
 }
 
-
 function filtrarLibros() {
-  const input = normalizarTexto(document.getElementById("addBook").value);
+  const input = normalizarTexto(document.getElementById("buscador").value);
   
   const librosFiltrados = todosLosLibros.filter(libro =>
     normalizarTexto(libro.titulo).includes(input) ||
-    normalizarTexto(libro.autor).includes(input) ||
-    normalizarTexto(libro.editorial).includes(input)
+    normalizarTexto(libro.autor).includes(input)
   );
 
-  // ordenar los resultados filtrados con el mismo criterio actual
-  const criterio = document.getElementById("ordenarPor").value;
-  const librosOrdenados = [...librosFiltrados].sort((a, b) => {
-    let valorA = normalizarTexto(a[criterio]?.toString() || "");
-    let valorB = normalizarTexto(b[criterio]?.toString() || "");
-    if (criterio === "año") return (parseInt(valorA) || 0) - (parseInt(valorB) || 0);
-    return valorA.localeCompare(valorB);
-  });
-
-  mostrarLibros(librosOrdenados);
+  mostrarLibros(librosFiltrados);
 }
 
 cargarLibros();
+
+

@@ -39,7 +39,7 @@ def searchBook():
             'titulo':book['titulo'],
             'autor':book['autor'],
             'editorial':book['editorial'],
-            'año':book['año'],
+            'estado':book['estado'],
             'portada_url':book['portada']
         }
         return {'type': 'edit','libro': libro}
@@ -53,20 +53,25 @@ def searchBook():
             try: portada = data['imageLinks']['thumbnail'] 
             except: portada = ''
             try: title = data['title']
-            except: title = '-'
+            except: title = ''
             try:
                 authors = str(data['authors']).replace('[','').replace(']','').replace("""'""",'')
                 
-            except: authors = '-'
+            except: authors = ''
             try: publisher = data['publisher'] 
-            except: publisher = '-'
-            try: publishedDate = data['publishedDate'] 
-            except: publishedDate = '-'
+            except: publisher = ''
+            
+            libro = {
+                'portada_url': portada,
+                'titulo': title,
+                'autor': authors,
+                'editorial': publisher,
+                'estado': 'Disponible'
+            }
 
-            database.addBook(portada,isbn,title,authors, publisher,publishedDate)
             response = {
                 'type':'API',
-                'title':title
+                'libro': libro
             }
             return response
         else: return {'type': 'manual'}
@@ -74,34 +79,22 @@ def searchBook():
     #    print(e)
     #    return {'error': 500}
 
-@app.route('/api/libro/manual', methods = ['POST'])
-def addBookManual():
+@app.route('/api/libro/save', methods = ['POST'])
+def saveBook():
     data = request.json
-    if data['isbn']:
-        isbn = data['isbn']
-    else: isbn = '-'
-    if data['portada_url']:
-        portada = data['portada_url'] 
-    else:portada = ''
-    if data['titulo']:
-        title = data['titulo']
-    else: title = '-'
-    if data['autor']:
-        authors = data['autor']
-    else: authors = '-'
-    if data['editorial']:
-        publisher = data['editorial'] 
-    else: publisher = '-'
-    if data['año']:
-        publishedDate = data['año'] 
-    else: publishedDate = '-'
-
-    database.addBook(portada,isbn,title,authors, publisher,publishedDate)
-    response = {
-        'status':200,
-        'title':title
-    }
-    return response
+    
+    isbn = data['isbn']
+    portada = data['portada_url'] 
+    title = data['titulo']
+    authors = data['autor']
+    publisher = data['editorial']
+    state = data['estado']
+    
+    if not database.searchBook(isbn):
+        return database.addBook(portada,isbn,title,authors, publisher,state)
+    else: 
+        return database.editBook(data)
+    
 
 def run_flask():
     app.run(
@@ -111,7 +104,7 @@ def run_flask():
         use_reloader=False
     )
 
-if __name__ == "_tg_main__":
+if __name__ == "__main__":
     threading.Thread(target=run_flask, daemon=True).start()
 
     webview.create_window(
@@ -119,8 +112,7 @@ if __name__ == "_tg_main__":
         "http://127.0.0.1:5000",
         width=1000,
         height=700,
-        resizable=True
+        resizable=True,
+        text_select=True
     )
     webview.start()
-
-run_flask()

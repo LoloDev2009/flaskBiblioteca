@@ -1,6 +1,34 @@
 import sqlite3
+import os
+import sys
+import shutil
 
-db = 'database/books.db'
+APP_NAME = "Biblioteca"
+
+def get_db_path():
+    # Carpeta AppData\Local\Biblioteca
+    base_dir = os.path.join(
+        os.environ.get("LOCALAPPDATA", os.getcwd()),
+        APP_NAME
+    )
+
+    os.makedirs(base_dir, exist_ok=True)
+
+    db_path = os.path.join(base_dir, "books.db")
+
+    # Si la DB no existe, copiar la incluida en el exe
+    if not os.path.exists(db_path):
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        bundled_db = os.path.join(base_path, "database", "books.db")
+        shutil.copyfile(bundled_db, db_path)
+
+    return db_path
+
+db = get_db_path()
 
 def tables():
     conn = sqlite3.connect(db)
@@ -11,7 +39,8 @@ def tables():
                    titulo TEXT NOT NULL,
                    autor TEXT NOT NULL,
                    editorial TEXT NOT NULL,
-                   año INTEGER,
+                   estado TEXT NOT NULL,
+                   comentario TEXT,
                    isbn INTEGER UNIQUE)""")
     conn.commit()
     conn.close()
@@ -20,7 +49,7 @@ def getBooks():
     books = []
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
-    cursor.execute("""SELECT id,portada,titulo,autor,editorial,año,isbn FROM libros""")
+    cursor.execute("""SELECT id,portada,titulo,autor,editorial,isbn,estado FROM libros""")
     response = cursor.fetchall()
     conn.commit()
     conn.close()
@@ -31,15 +60,15 @@ def getBooks():
             'titulo':book[2],
             'autor':book[3],
             'editorial':book[4],
-            'año':book[5],
-            'isbn': book[6]
+            'isbn':book[5],
+            'estado': book[6]
         })
     return books
 
 def searchBook(isbn):
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
-    cursor.execute("""SELECT id,portada,titulo,autor,editorial,año,isbn FROM libros WHERE isbn = ?""",(isbn,))
+    cursor.execute("""SELECT id,portada,titulo,autor,editorial,estado,isbn FROM libros WHERE isbn = ?""",(isbn,))
     response = cursor.fetchone()
     conn.commit()
     conn.close()
@@ -50,19 +79,23 @@ def searchBook(isbn):
             'titulo':response[2],
             'autor':response[3],
             'editorial':response[4],
-            'año':response[5],
+            'estado':response[5],
             'isbn': response[6]
         }
         return book
     else: return
 
-def addBook(portada,isbn, title='-', autor='-', editorial='-', date='-'):
-    conn = sqlite3.connect(db)
-    cursor = conn.cursor()
-    cursor.execute("""INSERT INTO libros (portada,titulo,autor,editorial,año,   isbn) VALUES (?,?,?,?,?,?)""",(portada,title,autor,editorial,date,isbn))
-    conn.commit()
-    conn.close()
-    return
+def addBook(portada,isbn, title, autor, editorial, estado):
+    try:
+        conn = sqlite3.connect(db)
+        cursor = conn.cursor()
+        cursor.execute("""INSERT INTO libros (portada,titulo,autor,editorial,estado,isbn) VALUES (?,?,?,?,?,?)""",(portada,title,autor,editorial,estado,isbn))
+        conn.commit()
+        conn.close()
+        return "Libro agregado correctamente", 200
+    except Exception as e: 
+        print(e)
+        return "Error al agregar el libro", 500  
 
 def deleteBook(isbn):
     conn = sqlite3.connect(db)
@@ -73,22 +106,20 @@ def deleteBook(isbn):
     return
 
 def editBook(book):
-    print(book)
     isbn = book['isbn']
     titulo = book['titulo']
     autor = book['autor']
     editorial = book['editorial']
-    año = book['año']
+    estado = book['estado']
     portada = book['portada_url']
     try:
         conn = sqlite3.connect(db)
         cursor = conn.cursor()
-        cursor.execute("UPDATE libros SET titulo = ?, autor = ?, editorial = ?, año = ?, portada = ? WHERE isbn = ? ", (titulo,autor,editorial,año,portada,isbn))
+        cursor.execute("UPDATE libros SET titulo = ?, autor = ?, editorial = ?, estado = ?, portada = ? WHERE isbn = ? ", (titulo,autor,editorial,estado,portada,isbn))
         conn.commit()
         conn.close()
-        return {'title': titulo, 'status': 'ok'}
-    except Exception as e:
-        return {'title': titulo, 'status': 'not good :(', 'exception': e}
+        return "Libro editado correctamente", 200
+    except: return "Error al editar el libro",500
 
 tables()
 
